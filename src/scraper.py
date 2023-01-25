@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
 import re
+from extract_price import ExtractPrice
 
 def replace_url_string(url: str):
     return url.replace("small", "medium")
@@ -18,6 +19,9 @@ class Scraper:
 
         # Initialize an empty list to store the extracted products
         products = []
+        
+        # Create a instance of the ExtractPrice class
+        extractor = ExtractPrice()
 
         # Iterate over the "album__main" "a" tags
         for album_main_a_tag in album_main_a_tags:
@@ -25,12 +29,15 @@ class Scraper:
                 # Extract the product name and price from the "title" attribute of the "a" tag
                 product_name_and_price = album_main_a_tag['title']
                 
-                # Split the product name and price by the yen symbol
-                product_price, product_name = re.split(r'¥', product_name_and_price, maxsplit=1)
-
-                # Strip leading and trailing whitespace from the product name and price
-                product_name = product_name.strip()
-                product_price = product_price.strip()
+                # Extract the product name and price
+                extracted_data = extractor.extract(product_name_and_price)
+                
+                product_name = extracted_data['name']
+                product_price = extracted_data['price']
+                
+                # Skip the item if the price is not found
+                if product_price == None:
+                    raise Exception("Price not found")
 
                 # Find the "img" tag inside the "album__imgwrap" div
                 img_tag = album_main_a_tag.find('div', class_='album__imgwrap').find('img')
@@ -51,7 +58,7 @@ class Scraper:
                     'image_url': image_url
                 })
             except Exception as e:
-                pass
+                print(e)
 
         # Return the list of products
         return products
