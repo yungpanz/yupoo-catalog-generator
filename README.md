@@ -1,4 +1,6 @@
-![Logo](https://github.com/yungpanz/yupoo-catalog-generator/raw/main/icons/logo.png)
+<p align="center">
+  <img src="https://github.com/yungpanz/yupoo-catalog-generator/raw/main/icons/logo.png" width="300" height="300">
+</p>
 
 [![Build](https://github.com/yungpanz/yupoo-catalog-generator/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/yungpanz/yupoo-catalog-generator/actions/workflows/build.yml)
 

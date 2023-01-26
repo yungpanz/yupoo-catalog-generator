@@ -1,6 +1,6 @@
 import sys
 import re
-import threading
+import json
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QLineEdit, QLabel, QPushButton, QFileDialog, QComboBox, QGraphicsView, QGraphicsScene
 )
@@ -43,7 +43,7 @@ class Window(QWidget):
         self.price_multiplier_text_box.setValidator(QDoubleValidator())
         
         # Create a text box to accept only floats
-        self.price_multiplier_text_box = QLineEdit(self)
+        self.price_multiplier_text_box = QLineEdit('1', self)
         self.price_multiplier_text_box.move(230, 120)
         self.price_multiplier_text_box.resize(200, 32)
 
@@ -102,6 +102,8 @@ class Window(QWidget):
         self.output_combo_box = QComboBox(self)
         self.output_combo_box.move(200, 300)
         self.output_combo_box.addItem('PDF')  # Add an item to the list
+        self.output_combo_box.addItem('JSON')  # Add an item to the list
+        self.output_combo_box.addItem('CSV(Shopify)')  # Add an item to the list
         
         # Create a button to generate the catalog
         generate_button = QPushButton('Generate catalog', self)
@@ -148,6 +150,8 @@ class Window(QWidget):
             
             if self.output_format == "PDF":
                 self.generate_pdf()
+            elif self.output_format == "JSON":
+                self.generate_json()
 
         # Connect the buttons' clicked signals to the functions
         image_button.clicked.connect(on_image_button_clicked)
@@ -184,6 +188,29 @@ class Window(QWidget):
         if file_name:
             # Save the PDF file at the selected path
             pdf.create_pdf(file_name)
+    
+    def generate_json(self):
+        # Create an instance of the CurrencyConverter class
+        converter = CurrencyConverter()
+        
+        for i, product in enumerate(self.products):
+            # Convert the prices to the selected currency
+            product["price"] = converter.convert(float(product["price"]), "CNY", self.currency_code)
+            # Use the selected currency to format the price
+            product["price"] = "{:.2f}".format(float(product["price"]) * self.price_multiplier)
+            # Remove all emoji characters from the string
+            product["name"] = re.sub(r'[^\x00-\x7F]', '', product['name'])
+        
+        # Show the "Save File" dialog
+        options = QFileDialog.Options()
+        options |= QFileDialog.ReadOnly
+        file_name, _ = QFileDialog.getSaveFileName(self, "Save JSON", "", "JSON Files (*.json)", options=options)
+        
+        if file_name:
+            # Save the PDF file at the selected path
+            with open(file_name, "w") as fp:
+                json.dump(self.products, fp)
+        
         
         
 
